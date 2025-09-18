@@ -1,9 +1,203 @@
+// schema.prisma (exemplo)
 generator client {
   provider = "prisma-client-js"
-  output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN_RH
+  ANALYST_RH
+  MANAGER
+  READER
+  CONSULTANT
+}
+
+enum CargoStatus {
+  DRAFT
+  IN_REVIEW
+  PUBLISHED
+  ARCHIVED
+}
+
+enum CompetencyCategory {
+  ORGANIZATIONAL
+  TECHNICAL
+  BEHAVIORAL
+}
+
+enum JobStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+model User {
+  id            String         @id @default(uuid())
+  name          String
+  email         String         @unique
+  password      String
+  role          Role           @default(ANALYST_RH)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  cargosCreated Cargo[]        @relation("createdBy")
+  comments      Comment[]
+  approvals     Approval[]
+  CargoVersion  CargoVersion[]
+}
+
+model Cargo {
+  id             String            @id @default(uuid())
+  code           String? // optional business code
+  title          String
+  family         String?
+  area           String?
+  level          String?
+  minSalaryCents Int?
+  maxSalaryCents Int?
+  status         CargoStatus       @default(DRAFT)
+  content        Json // full structured content: mission, responsibilities, requirements, etc.
+  createdById    String?
+  createdBy      User?             @relation("createdBy", fields: [createdById], references: [id])
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  versions       CargoVersion[]
+  competencies   CargoCompetency[]
+  attachments    Attachment[]
+  comments       Comment[]
+  approvals      Approval[]
+  cboValidated   Boolean           @default(false)
+  cboChosen      String? // chosen CBO code
+  cboMeta        Json? // store similarity, suggestions etc.
+  deletedAt      DateTime?
+  CboSuggestion  CboSuggestion[]
+}
+
+model CargoVersion {
+  id        String   @id @default(uuid())
+  cargo     Cargo    @relation(fields: [cargoId], references: [id])
+  cargoId   String
+  version   Int
+  content   Json // snapshot of content at this version
+  changeLog String? // "Alteração salarial", etc.
+  authorId  String?
+  author    User?    @relation(fields: [authorId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@index([cargoId, version])
+}
+
+model Competency {
+  id          String             @id @default(uuid())
+  name        String
+  category    CompetencyCategory
+  description String?
+  levels      Json? // array of level definitions
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  cargos      CargoCompetency[]
+
+  @@index([name])
+}
+
+model CargoCompetency {
+  id           String     @id @default(uuid())
+  cargo        Cargo      @relation(fields: [cargoId], references: [id])
+  cargoId      String
+  competency   Competency @relation(fields: [competencyId], references: [id])
+  competencyId String
+  level        Int?
+  mandatory    Boolean    @default(false)
+  indicators   Json?
+  createdAt    DateTime   @default(now())
+
+  @@unique([cargoId, competencyId])
+}
+
+model Attachment {
+  id         String   @id @default(uuid())
+  cargo      Cargo?   @relation(fields: [cargoId], references: [id])
+  cargoId    String?
+  key        String // S3 key
+  url        String? // public URL (optional)
+  fileName   String
+  mimeType   String
+  size       Int
+  uploadedBy String?
+  createdAt  DateTime @default(now())
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  cargo     Cargo    @relation(fields: [cargoId], references: [id])
+  cargoId   String
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id])
+  text      String
+  resolved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model Approval {
+  id         String   @id @default(uuid())
+  cargo      Cargo    @relation(fields: [cargoId], references: [id])
+  cargoId    String
+  approverId String
+  approver   User     @relation(fields: [approverId], references: [id])
+  action     String // "APPROVE" | "REJECT" | "REQUEST_CHANGES"
+  comment    String?
+  createdAt  DateTime @default(now())
+}
+
+model ImportJob {
+  id        String    @id @default(uuid())
+  createdBy String
+  fileKey   String
+  status    JobStatus @default(PENDING)
+  result    Json?
+  errors    Json?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model CBOCode {
+  id            String          @id @default(uuid())
+  code          String          @unique
+  title         String
+  description   String?
+  source        String?
+  CboSuggestion CboSuggestion[]
+}
+
+model CboSuggestion {
+  id         String   @id @default(uuid())
+  cargo      Cargo    @relation(fields: [cargoId], references: [id])
+  cargoId    String
+  cboCode    CBOCode  @relation(fields: [cboCodeId], references: [id])
+  cboCodeId  String
+  similarity Float
+  createdAt  DateTime @default(now())
+}
+
+model Job {
+  id        String    @id @default(uuid())
+  type      String
+  payload   Json
+  status    JobStatus @default(PENDING)
+  result    Json?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Webhook {
+  id        String   @id @default(uuid())
+  url       String
+  events    String[] // e.g. ["cargo.published"]
+  secret    String?
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
 }
