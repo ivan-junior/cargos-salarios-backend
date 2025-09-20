@@ -1,0 +1,39 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Run Back Dev",
+			"type": "shell",
+			"command": "npm run start:dev",
+			"options": {
+				"statusbar": {
+					"running": {
+						"backgroundColor": "statusBarItem.warningBackground"
+					}
+				}
+			}
+		},
+		{
+			"label": "Prisma: Generate Client",
+			"type": "shell",
+			"command": "npx prisma generate",
+		},
+		{
+			"label": "Prisma: Migrate Dev",
+			"type": "shell",
+			"command": "npx prisma migrate dev",
+		},
+		{
+			"label": "Prisma: Studio",
+			"type": "shell",
+			"command": "npx prisma studio",
+			"options": {
+				"statusbar": {
+					"running": {
+						"backgroundColor": "statusBarItem.warningBackground"
+					}
+				}
+			}
+		}
+	]
+}
