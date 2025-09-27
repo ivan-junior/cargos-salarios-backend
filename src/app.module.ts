@@ -1,12 +1,12 @@
-import { UsersModule } from './users/users.module'
 import { Module } from '@nestjs/common'
 import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import { ConfigModule } from '@nestjs/config'
-import '@/env'
+import { AuthModule } from '@thallesp/nestjs-better-auth'
+import { auth } from './db/better-auth'
 
 @Module({
-  imports: [ConfigModule.forRoot(), UsersModule],
+  imports: [ConfigModule.forRoot(), AuthModule.forRoot(auth)],
   controllers: [AppController],
   providers: [AppService]
 })

@@ -1,7 +1,6 @@
 import { PartialType } from '@nestjs/mapped-types'
 import { ApiProperty } from '@nestjs/swagger'
-import { Role } from '@prisma/client'
-import { IsEmail, IsEnum, IsNotEmpty, IsString, MinLength } from 'class-validator'
+import { IsEmail, IsNotEmpty, IsString, MinLength } from 'class-validator'
 
 export class CreateUserDto {
   @IsNotEmpty()
@@ -18,9 +17,8 @@ export class CreateUserDto {
   @ApiProperty()
   password: string
 
-  @IsEnum(Role)
-  @ApiProperty({ enum: Role })
-  role?: Role
+  @ApiProperty()
+  role?: string
 }
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {}
