@@ -13,17 +13,16 @@ enum UserRole {
   USER
 }
 
-enum MemberRole {
-  ADMIN_RH
-  ANALISTA_RH
-  GESTOR
-  LEITOR
-}
-
 enum UserStatus {
   ACTIVE
   INACTIVE
   BLOCKED
+}
+
+enum JobStatus {
+  DRAFT
+  REVIEWING
+  PUBLISHED
 }
 
 model User {
@@ -100,6 +99,7 @@ model Organization {
   metadata    String?
   members     Member[]
   invitations Invitation[]
+  Job         Job[]
 
   @@unique([slug])
   @@map("organization")
@@ -111,7 +111,7 @@ model Member {
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   userId         String
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  role           MemberRole
+  role           String
   createdAt      DateTime
 
   @@map("member")
@@ -129,4 +129,30 @@ model Invitation {
   user           User         @relation(fields: [inviterId], references: [id], onDelete: Cascade)
 
   @@map("invitation")
+}
+
+model Job {
+  id             String       @id @default(uuid(7))
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  title          String // Nome do cargo
+  family         String? // Família (opcional)
+  area           String? // Área/Departamento
+  level          String? // Júnior, Pleno, Sênior...
+  status         JobStatus    @default(DRAFT) // draft, reviewing, published
+  currentVersion String? // referência à última versão publicada
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  versions       JobVersion[]
+}
+
+model JobVersion {
+  id        String   @id @default(uuid(7))
+  jobId     String
+  job       Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  version   Int
+  content   Json // Armazena campos customizados (layout flexível)
+  createdBy String
+  createdAt DateTime @default(now())
+  published Boolean  @default(false)
 }

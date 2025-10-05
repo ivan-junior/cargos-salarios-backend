@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Redefinir senha</title>
+  <style>
+    body {
+      background: #f6f7fb;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: #1f2937;
+    }
+
+    .container {
+      max-width: 560px;
+      margin: 24px auto;
+      background: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+    }
+
+    .header {
+      background: #111827;
+      color: #fff;
+      padding: 20px 24px;
+      font-size: 18px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .content {
+      padding: 24px;
+      background-color: #f1f1f1;
+    }
+
+    p {
+      line-height: 1.6;
+      margin: 0 0 16px;
+    }
+
+    .btn {
+      display: inline-block;
+      background: #059669;
+      color: #fff !important;
+      text-decoration: none;
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="header">Redefina sua senha</div>
+    <div class="content">
+      <p>Recebemos uma solicitação para redefinir sua senha.</p>
+      <p style="margin:24px 0; text-align: center;">
+        <a class="btn" href="{{resetLink}}" target="_blank" rel="noopener">Criar nova senha</a>
+      </p>
+      <p>Se você não solicitou a redefinição, ignore este e-mail.</p>
+    </div>
+  </div>
+</body>
+
+</html>
